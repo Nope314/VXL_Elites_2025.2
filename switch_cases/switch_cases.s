@@ -24,11 +24,11 @@
 	.type	main, %function
 main:
 	@ Function supports interworking.
-	@ args = 0, pretend = 0, frame = 16
+	@ args = 0, pretend = 0, frame = 24
 	@ frame_needed = 1, uses_anonymous_args = 0
 	push	{fp, lr}
 	add	fp, sp, #4
-	sub	sp, sp, #16
+	sub	sp, sp, #24
 	mov	r3, #15
 	str	r3, [fp, #-16]
 	ldr	r3, [fp, #-16]
@@ -39,40 +39,62 @@ main:
 	beq	.L3
 	b	.L4
 .L2:
-	mvn	r3, #0
+	mov	r3, #1
 	str	r3, [fp, #-8]
 	b	.L4
 .L3:
-	mov	r3, #1
+	mov	r3, #2
 	str	r3, [fp, #-8]
 	nop
 .L4:
 	ldr	r1, [fp, #-8]
-	ldr	r0, .L9
+	ldr	r0, .L14
 	bl	printf
-	mvn	r3, #0
+	mov	r3, #2
 	str	r3, [fp, #-20]
 	nop
 	ldr	r1, [fp, #-20]
-	ldr	r0, .L9
+	ldr	r0, .L14
+	bl	printf
+	ldr	r3, [fp, #-16]
+	cmp	r3, #10
+	beq	.L5
+	ldr	r3, [fp, #-16]
+	cmp	r3, #15
+	beq	.L6
+	b	.L13
+.L5:
+	mov	r3, #1
+	str	r3, [fp, #-12]
+	b	.L8
+.L6:
+	mov	r3, #2
+	str	r3, [fp, #-12]
+	b	.L8
+.L13:
+	mov	r3, #3
+	str	r3, [fp, #-12]
+.L8:
+	ldr	r1, [fp, #-12]
+	ldr	r0, .L14
 	bl	printf
 	ldr	r3, [fp, #-16]
 	cmp	r3, #15
-	beq	.L5
+	beq	.L9
 	ldr	r3, [fp, #-16]
 	cmp	r3, #30
-	beq	.L6
-	b	.L7
-.L5:
-	mov	r3, #5
-	str	r3, [fp, #-12]
-.L6:
-	mov	r3, #15
-	str	r3, [fp, #-12]
+	beq	.L10
+	b	.L11
+.L9:
+	mov	r3, #1
+	str	r3, [fp, #-24]
+.L10:
+	mov	r3, #2
+	str	r3, [fp, #-24]
 	nop
-.L7:
+.L11:
 	ldr	r1, [fp, #-12]
-	ldr	r0, .L9
+	ldr	r0, .L14
 	bl	printf
 	mov	r3, #0
 	mov	r0, r3
@@ -80,9 +102,9 @@ main:
 	@ sp needed
 	pop	{fp, lr}
 	bx	lr
-.L10:
+.L15:
 	.align	2
-.L9:
+.L14:
 	.word	.LC0
 	.size	main, .-main
 	.ident	"GCC: (GNU Arm Embedded Toolchain 10.3-2021.10) 10.3.1 20210824 (release)"
