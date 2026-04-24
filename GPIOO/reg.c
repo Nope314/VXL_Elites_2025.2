@@ -12,34 +12,59 @@ void GPIO_clock_enable()
 
 void GPIO_Init()
 {
-    //PA0: intput pull-up, PB3: output push-pull
-    GPIOA_CRL_struct.bits.mode0 = 0; //input  
-    GPIOA_CRL_struct.bits.cnf0 = 2; //pull-up/pull-down
+    //PA0: intput pull-up, PB13: output push-pull
+    GPIOA->CRL.bits.mode0 = 0; //input 
+    GPIOA->CRL.bits.cnf0 = 2; //pull-up/pull-down
     
-    GPIOA_ODR_struct.bits.odr0 = 1; //pull-up 
+    GPIOA->ODR.bits.odr0 = 1; //pull-up 
 
-    GPIOB_CRH_struct.bits.mode13 = 1; //output 10MHz
-    GPIOB_CRH_struct.bits.cnf13 = 0; //push-pull
+    GPIOB->CRH.bits.mode13 = 1; //output 10MHz
+    GPIOB->CRH.bits.cnf13 = 0; //push-pull
 }
 
+void delay_ms(uint32_t ms)
+{
+    uint32_t i, j;
+    for (i = 0; i < ms; i++)
+        for (j = 0; j < 1000; j++);
+}
+
+
+uint8_t Button_Read()
+{
+    if(GPIOA->IDR.bits.idr0 == 0)
+    {
+        delay_ms(20); // debounce
+
+        if(GPIOA->IDR.bits.idr0 == 0)
+        {
+            while(GPIOA->IDR.bits.idr0 == 0); // đợi nhả nút
+            return 1;
+        }
+    }
+    return 0;
+}
 int main()
 {
     GPIO_clock_enable();
     GPIO_Init();
 
+    static uint8_t led_state = 0;
+
     while (1)
     {
-         if(GPIOA_IDR_struct.bits.idr0 == 0) 
+        if(Button_Read())
         {
-            GPIOB_BRR_struct.bits.br13 = 1; //LED on
-			GPIOB_BSRR_struct.bits.bs13 = 0;
+            led_state = !led_state; // đảo trạng thái
+        }
+
+        if(led_state)
+        {
+            GPIOB->BSRR.bits.bs13 = 1;
         }
         else
         {
-            GPIOB_BSRR_struct.bits.bs13 = 1 ; //LED off
-			GPIOB_BRR_struct.bits.br13 = 0;
+            GPIOB->BRR.bits.br13 = 1;
         }
     }
-    
 }
-
